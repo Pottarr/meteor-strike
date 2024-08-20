@@ -16,10 +16,10 @@ use std::{
 };
 
 enum Direction {
-    NORTH,
-    SOUTH,
-    EAST,
-    WEST
+    North,
+    South,
+    East,
+    West
 }
 
 struct Player {
@@ -41,7 +41,13 @@ impl Player {
     }
 
     fn move_player(&mut self, direction: Direction) {
-        
+        match direction {
+            Direction::North => self.y -= 1,
+            Direction::East => self.x += 1,
+            Direction::South => self.y += 1,
+            Direction::West => self.x -= 1,
+            _ => {}
+        }
     }
 
     fn player_score(&mut self) {
@@ -84,6 +90,7 @@ fn main() {
         stdout.execute(Clear(ClearType::All));
 
         show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
+        show_entity(player.x, player.y, "|", Color::Blue);
 
         if let Ok(true) = event::poll(Duration::from_millis(50)) {
             if let Ok(event::Event::Key(KeyEvent { code, .. })) = event::read() {
@@ -104,25 +111,25 @@ fn main() {
                     //     }
                     // }
                     KeyCode::Char('w') => {
-                        player.move_player(Direction::NORTH);
+                        player.move_player(Direction::North);
                     }
                     KeyCode::Char('s') => {
-                        player.move_player(Direction::SOUTH);
+                        player.move_player(Direction::South);
                     }
                     KeyCode::Char('d') => {
-                        player.move_player(Direction::EAST);
+                        player.move_player(Direction::East);
                     }
                     KeyCode::Char('a') => {
-                        player.move_player(Direction::WEST);
+                        player.move_player(Direction::West);
                     }
                     KeyCode::Esc => break,
                     _ => {}
                 }
             }
         }
-
+        stdout.flush();
         player.score += 1;
-        thread::sleep(Duration::from_millis(1000));
+        thread::sleep(Duration::from_millis(50));
     }
 
 }
