@@ -55,20 +55,24 @@ impl Player {
     }
 }
 
-// struct Meteor {
-//     id: u8,
-//     x: u16,
-//     y: u16
-// }
+struct Meteor {
+    id: u8,
+    x: u16,
+    y: u16
+}
 
-// impl Meteor {
-//     fn new(screen_x, screen_y) {
-//         let rng = rand::thread_rng();
-//         let meteor_x = rng.gen_range(1..=screen_x);
-//         let meteor_y = rng.gen_range(1..=screen_y);
-
-//     }
-// }
+impl Meteor {
+    fn new(meteor_id: u8, max_x: u16, max_y: u16) -> Meteor {
+        let mut rng = rand::thread_rng();
+        let meteor_x = rng.gen_range(1..=max_x);
+        let meteor_y = rng.gen_range(1..=max_y);
+        Meteor {
+            id: meteor_id,
+            x: meteor_x,
+            y: meteor_y,
+        }
+    }
+}
 
 fn show_entity(x: u16, y: u16, entity: &str, color: Color) {
     let mut stdout = stdout();
@@ -84,15 +88,24 @@ fn main() {
     terminal::enable_raw_mode();
 
     let mut player = Player::new();    
-
+    let max_x: u16 = 40;
+    let max_y: u16 = 45;
 
     loop {
+        let mut meteor_vec: Vec<Meteor> = Vec::new();
+        if meteor_vec.len() < 10 {
+            meteor_vec.push(Meteor::new(meteor_vec.len() as u8 + 1, max_x, max_y))
+        }
         stdout.execute(Clear(ClearType::All));
-
+        
         show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
         show_entity(player.x, player.y, "|", Color::Blue);
+        
+        for i in &meteor_vec {
+            show_entity(i.x, i.y, "@", Color::Red);
+        }
 
-        if let Ok(true) = event::poll(Duration::from_millis(50)) {
+        if let Ok(true) = event::poll(Duration::from_millis(30)) {
             if let Ok(event::Event::Key(KeyEvent { code, .. })) = event::read() {
                 match code {
                     // KeyCode::Char('a') => {
@@ -129,7 +142,7 @@ fn main() {
         }
         stdout.flush();
         player.score += 1;
-        thread::sleep(Duration::from_millis(50));
+        thread::sleep(Duration::from_millis(30));
     }
 
 }
