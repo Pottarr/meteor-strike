@@ -1,18 +1,14 @@
 use crossterm::{
-    cursor::{MoveTo, Hide, Show},
-    event::{self, KeyCode, KeyEvent},
+    cursor::{Hide, MoveTo, Show},
+    event::{self, EnableMouseCapture, KeyCode, KeyEvent},
     execute,
-    style::{Color, Print, ResetColor, SetForegroundColor},
+    style::{Color, Print, ResetColor, SetAttribute, SetForegroundColor},
     terminal::{self, Clear, ClearType},
     ExecutableCommand,
 };
 use rand::Rng;
 use std::{
-    collections::HashSet,
-    error::Error,
-    io::{stdout, Write},
-    thread,
-    time::Duration,
+    cmp::max_by_key, collections::HashSet, error::Error, io::{stdout, Write}, thread, time::{Duration, Instant}
 };
 
 enum Direction {
@@ -40,13 +36,36 @@ impl Player {
         }
     }
 
-    fn move_player(&mut self, direction: Direction) {
+    fn move_player(&mut self, direction: Direction, max_x: u16, max_y: u16) {
         match direction {
-            Direction::North => self.y -= 1,
-            Direction::East => self.x += 1,
-            Direction::South => self.y += 1,
-            Direction::West => self.x -= 1,
-            _ => {}
+            Direction::North => {
+                if self.y >= 1 {
+                    self.y -= 1;
+                } else {
+                    self.y = 1;
+                }
+            }
+            Direction::East => {
+                if self.x <= max_x{
+                    self.x += 1;
+                } else {
+                    self.x = max_x;
+                }
+            },
+            Direction::South => {
+                if self.y <= max_y {
+                    self.y += 1;
+                } else {
+                    self.y = max_y
+                }
+            }
+            Direction::West => {
+                if self.x >= 1 {
+                    self.x -= 1;
+                } else {
+                    self.x = 1
+                }
+            }
         }
     }
 
@@ -84,65 +103,60 @@ fn show_entity(x: u16, y: u16, entity: &str, color: Color) {
 
 fn main() {
     let mut stdout = stdout();
-    stdout.execute(Hide);
-    terminal::enable_raw_mode();
+    stdout.execute(Hide).unwrap();
+    terminal::enable_raw_mode().unwrap();
 
     let mut player = Player::new();    
     let max_x: u16 = 40;
     let max_y: u16 = 45;
+    let start = Instant::now();
 
     loop {
+
+        let elapsed = start.elapsed();
+        let elapsed_milli = elapsed.as_millis();
+
+        if elapsed_milli % 1000 == 0 {
+            player.score += 1;
+        }
+        
         let mut meteor_vec: Vec<Meteor> = Vec::new();
         if meteor_vec.len() < 10 {
             meteor_vec.push(Meteor::new(meteor_vec.len() as u8 + 1, max_x, max_y))
         }
-        stdout.execute(Clear(ClearType::All));
-        
         show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
+        stdout.execute(Clear(ClearType::All)).unwrap();
+        
+        // show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
         show_entity(player.x, player.y, "|", Color::Blue);
         
         for i in &meteor_vec {
             show_entity(i.x, i.y, "@", Color::Red);
         }
-
-        if let Ok(true) = event::poll(Duration::from_millis(30)) {
+        
+        if let Ok(true) = event::poll(Duration::from_millis(1)) {
             if let Ok(event::Event::Key(KeyEvent { code, .. })) = event::read() {
                 match code {
-                    // KeyCode::Char('a') => {
-                    //     if pos_x > 1 {
-                    //         pos_x -= 1;
-                    //     }
-                    // }
-                    // KeyCode::Char('d') => {
-                    //     if pos_x < MAX_X {
-                    //         pos_x += 1;
-                    //     }
-                    // }
-                    // KeyCode::Char(' ') => {
-                    //     if !bullet.0 {
-                    //         bullet = (true, pos_x, pos_y - 1);
-                    //     }
-                    // }
                     KeyCode::Char('w') => {
-                        player.move_player(Direction::North);
+                        player.move_player(Direction::North, max_x, max_y);
                     }
                     KeyCode::Char('s') => {
-                        player.move_player(Direction::South);
+                        player.move_player(Direction::South, max_x, max_y);
                     }
                     KeyCode::Char('d') => {
-                        player.move_player(Direction::East);
+                        player.move_player(Direction::East, max_x,  max_y);
                     }
                     KeyCode::Char('a') => {
-                        player.move_player(Direction::West);
+                        player.move_player(Direction::West, max_x, max_y);
                     }
                     KeyCode::Esc => break,
                     _ => {}
                 }
             }
         }
-        stdout.flush();
-        player.score += 1;
-        thread::sleep(Duration::from_millis(30));
+        // player.score += 1;
+        stdout.flush().unwrap();
     }
-
+    thread::sleep(Duration::from_millis(1000));
+    
 }
