@@ -18,6 +18,11 @@ enum Direction {
     West
 }
 
+enum MeteorState {
+    Ground,
+    Falling
+}
+
 struct Player {
     alive: bool,
     x: u16,
@@ -77,7 +82,8 @@ impl Player {
 struct Meteor {
     id: u8,
     x: u16,
-    y: u16
+    y: u16,
+    state: MeteorState
 }
 
 impl Meteor {
@@ -89,6 +95,7 @@ impl Meteor {
             id: meteor_id,
             x: meteor_x,
             y: meteor_y,
+            state: MeteorState::Falling
         }
     }
 }
@@ -121,7 +128,7 @@ fn main() {
         }
         
         let mut meteor_vec: Vec<Meteor> = Vec::new();
-        if meteor_vec.len() < 10 {
+        if meteor_vec.len() < 10 && elapsed_milli % 100 == 0 {
             meteor_vec.push(Meteor::new(meteor_vec.len() as u8 + 1, max_x, max_y))
         }
         show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
