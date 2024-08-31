@@ -7,7 +7,7 @@ use crossterm::{
 };
 use rand::Rng;
 use std::{
-     io::{stdout, Write}, thread, time::{Duration, Instant}
+     io::{stdout, Write}, time::{Duration, Instant}
 };
 
 enum Direction {
@@ -16,12 +16,6 @@ enum Direction {
     East,
     West
 }
-
-// enum MeteorState {
-//     Ground,
-//     Falling
-// }
-
 struct Player {
     alive: bool,
     x: u16,
@@ -31,11 +25,11 @@ struct Player {
 
 impl Player {
 
-    fn new() -> Player {
+    fn new(max_x: u16, max_y: u16) -> Player {
         Player {
             alive: true,
-            x: 10,
-            y: 10,
+            x: (max_x + 1) / 2,
+            y: (max_y + 1) /2,
             score: 0
         }
     }
@@ -80,36 +74,20 @@ impl Player {
 
 
 struct Meteor {
-    // id: u8,
     x: u16,
-    y: u16,
-    // state: MeteorState
+    y: u16
 }
 
 impl Meteor {
-    // fn new(meteor_id: u8, max_x: u16, max_y: u16) -> Meteor {
     fn new(max_x: u16, max_y: u16) -> Meteor {
         let mut rng = rand::thread_rng();
         let meteor_x = rng.gen_range(1..=max_x);
         let meteor_y = rng.gen_range(1..=max_y);
         Meteor {
-            // id: meteor_id,
             x: meteor_x,
             y: meteor_y,
-            // state: MeteorState::Falling
         }
     }
-    // fn falling(&mut self, mut met_time: Instant) {
-    //     if met_time.elapsed() >= Duration::new(0, 0) && met_time.elapsed() <= Duration::new(1, 0) {
-    //         show_entity(self.x, self.y, "@", Color::White);
-    //     } else if met_time.elapsed() >= Duration::new(1, 0) && met_time.elapsed() <= Duration::new(2, 0) {
-    //         show_entity(self.x, self.y, "@", Color::Yellow);
-    //     } else if met_time.elapsed() >= Duration::new(2, 0) && met_time.elapsed() <= Duration::new(5, 0) {
-    //         show_entity(self.x, self.y, "@", Color::Red);
-    //     } else {}
-    //     met_time = Instant::now();
-    //     // thread::sleep(Duration::from_secs(3));
-    // }
 }
 
 fn show_entity(x: u16, y: u16, entity: &str, color: Color) {
@@ -125,9 +103,9 @@ fn main() {
     stdout.execute(Hide).unwrap();
     terminal::enable_raw_mode().unwrap();
     
-    let mut player = Player::new();    
-    let max_x: u16 = 40;
-    let max_y: u16 = 45;
+    let max_x: u16 = 35;
+    let max_y: u16 = 21;
+    let mut player = Player::new(max_x, max_y);    
     
     let mut meteor_vec: Vec<Meteor> = Vec::new();
     
@@ -137,13 +115,21 @@ fn main() {
     
     loop {
 
-        if player.alive == false || player.score == 60 {
+        if player.alive == false {
+            stdout.execute(Clear(ClearType::All)).unwrap();
+            show_entity(5, 10, "You DEAD ", Color::DarkRed);
+            show_entity(5, 11, &format!("Score: {}", player.score), Color::White);
+            break;
+        }
+        if player.score == 60 {
+            stdout.execute(Clear(ClearType::All)).unwrap();
+            show_entity(5, 10, "You SURVIVED ", Color::Cyan);
+            show_entity(5, 11, &format!("Score: {}", player.score), Color::White);
             break;
         }
 
         if summon_met_time.elapsed() >= Duration::new(1, 0) {
             meteor_vec.push(Meteor::new(max_x, max_y));
-            // meteor_vec.push(Meteor::new(meteor_vec.len() as u8 + 1, max_x, max_y));
             summon_met_time = Instant::now();
         }
         
@@ -157,15 +143,7 @@ fn main() {
             if met_time.elapsed() >= Duration::new(0, 0) && met_time.elapsed() <= Duration::new(1, 0) {
                 show_entity(met.x, met.y, "@", Color::Red);
             }
-            // } else if met_time.elapsed() >= Duration::new(1, 0) && met_time.elapsed() <= Duration::new(2, 0) {
-                //     show_entity(met.x, met.y, "@", Color::Yellow);
-                // } else if met_time.elapsed() >= Duration::new(2, 0) && met_time.elapsed() <= Duration::new(5, 0) {
-                    //     show_entity(met.x, met.y, "@", Color::Red);
-                    // } else {}
                     met_time = Instant::now();
-                    
-                    // met.falling(met_time);
-                    // met_time = Instant::now();
                 }
                 
                 show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
@@ -188,7 +166,14 @@ fn main() {
                     KeyCode::Char('a') => {
                         player.move_player(Direction::West, max_x, max_y);
                     }
-                    KeyCode::Esc => break,
+                    KeyCode::Esc => {
+                        stdout.execute(Clear(ClearType::All)).unwrap();
+                        show_entity(5, 10, "You QUIT", Color::DarkRed);
+                        show_entity(5, 11, &format!("Score: {}", player.score), Color::White);
+                        break;
+
+                    }
+                    
                     _ => {}
                 }
             }
@@ -202,9 +187,5 @@ fn main() {
             score_time = Instant::now();
         }
     }
-    thread::sleep(Duration::from_millis(1000));
-    stdout.execute(Clear(ClearType::All)).unwrap();
-    
-    // let start = Instant::now();
-    
+
 }
