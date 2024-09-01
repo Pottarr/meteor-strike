@@ -11,8 +11,7 @@
     <h3>By</h3>
     <h3>67011247 Payut Kapasuwan</h3>
     <h3>67011352 Theepakorn Phayonrat</h3>
-</div>  
-
+</div>
 
 <img src="./images/Meteor Strike.png">
 
@@ -273,7 +272,7 @@ Your point will be how long you had survived.
         if player.x == met.x && player.y == met.y {
             player.alive = false;
         }
-        
+
         if met_time.elapsed() >= Duration::new(0, 0) && met_time.elapsed() <= Duration::new(1, 0) {
             show_entity(met.x, met.y, "@", Color::Red);
         }
@@ -290,7 +289,7 @@ Your point will be how long you had survived.
     ```
 
 5. Show Score
-    
+
     - Show player's score as a white text on the top.
 
     ```rust
@@ -322,9 +321,9 @@ Your point will be how long you had survived.
                     show_entity(5, 10, "You QUIT", Color::DarkRed);
                     show_entity(5, 11, &format!("Score: {}", player.score), Color::White);
                     break;
-                    
+
                 }
-                
+
                 _ => {}
             }
         }
@@ -358,3 +357,4 @@ Your point will be how long you had survived.
     stdout.execute(Clear(ClearType::All)).unwrap();
     ```
 
+# [Link to the presentation](https://www.canva.com/design/DAGPailrT6E/L0bChHE_LR6aYIBWCllGDA/view?utm_content=DAGPailrT6E&utm_campaign=designshare&utm_medium=link&utm_source=editor)
