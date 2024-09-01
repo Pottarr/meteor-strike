@@ -105,6 +105,7 @@ fn main() {
     
     let max_x: u16 = 35;
     let max_y: u16 = 21;
+
     let mut player = Player::new(max_x, max_y);    
     
     let mut meteor_vec: Vec<Meteor> = Vec::new();
@@ -133,7 +134,6 @@ fn main() {
             summon_met_time = Instant::now();
         }
         
-        stdout.execute(Clear(ClearType::All)).unwrap();
         
         for met in &mut meteor_vec {
             if player.x == met.x && player.y == met.y {
@@ -143,13 +143,12 @@ fn main() {
             if met_time.elapsed() >= Duration::new(0, 0) && met_time.elapsed() <= Duration::new(1, 0) {
                 show_entity(met.x, met.y, "@", Color::Red);
             }
-                    met_time = Instant::now();
-                }
-                
-                show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
+            met_time = Instant::now();
+        }
+        
+        show_entity(player.x, player.y, "■", Color::Blue);
         
         show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
-        show_entity(player.x, player.y, "■", Color::Blue);
         
         if let Ok(true) = event::poll(Duration::from_millis(1)) {
             if let Ok(event::Event::Key(KeyEvent { code, .. })) = event::read() {
@@ -171,7 +170,7 @@ fn main() {
                         show_entity(5, 10, "You QUIT", Color::DarkRed);
                         show_entity(5, 11, &format!("Score: {}", player.score), Color::White);
                         break;
-
+                        
                     }
                     
                     _ => {}
@@ -186,6 +185,7 @@ fn main() {
             player.add_score();
             score_time = Instant::now();
         }
+        stdout.execute(Clear(ClearType::All)).unwrap();
     }
 
 }
