@@ -149,7 +149,7 @@ fn main() {
                 show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
         
         show_entity(0, 0, &format!("Score: {}", player.score), Color::White);
-        show_entity(player.x, player.y, "|", Color::Blue);
+        show_entity(player.x, player.y, "■", Color::Blue);
         
         if let Ok(true) = event::poll(Duration::from_millis(1)) {
             if let Ok(event::Event::Key(KeyEvent { code, .. })) = event::read() {
